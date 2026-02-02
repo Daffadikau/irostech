@@ -1,8 +1,8 @@
-# AI Engineer Internship - Setup Guide
+# Irostech Internship - Setup Guide
 
 ## Your Workspace Structure
 ```
-~/AI-Internship-Workspace/
+~/Irostech-Workspace/
 ├── requirements.txt          # Python packages
 ├── venv/                     # Virtual environment (create this)
 ├── projects/                 # Your work projects
@@ -15,7 +15,7 @@
 
 ### 1. Create Virtual Environment
 ```bash
-cd ~/AI-Internship-Workspace
+cd ~/Irostech-Workspace
 python3 -m venv venv
 source venv/bin/activate
 ```
@@ -53,7 +53,7 @@ jupyter lab
 
 ### Start Your Day
 ```bash
-cd ~/AI-Internship-Workspace
+cd ~/Irostech-Workspace
 source venv/bin/activate
 # Log your plan for the day
 echo "$(date): Today's plan - [TASK]" >> daily-logs/$(date +%Y-%m).txt

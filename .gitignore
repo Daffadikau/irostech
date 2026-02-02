@@ -1,0 +1,59 @@
+# Git ignore for AI/ML projects
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# Data files
+*.csv
+*.parquet
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+data/
+datasets/
+
+# Model files
+*.pth
+*.pt
+*.ckpt
+*.pb
+*.h5
+*.weights
+models/
+checkpoints/
+
+# Logs
+*.log
+logs/
+mlruns/
+wandb/
+tensorboard/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# Outputs
+outputs/
+results/
+experiments/

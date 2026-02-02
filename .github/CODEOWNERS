@@ -1,0 +1,6 @@
+# Code owners for automatic review requests
+# Replace placeholders with your GitHub usernames or teams
+
+*       @your-org/your-team
+
+docs/   @your-org/docs-team

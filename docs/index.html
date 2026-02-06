@@ -222,6 +222,13 @@
         bottom: 16px;
       }
 
+      .map-overlay.bottom-right {
+        top: auto;
+        right: 16px;
+        left: auto;
+        bottom: 16px;
+      }
+
       .map-controls {
         display: flex;
         gap: 8px;
@@ -540,6 +547,14 @@
                     <button id="locate-btn" class="map-control-btn" aria-label="My Location" title="My Location">📍</button>
                   </div>
                 </div>
+                <div class="map-overlay bottom-right">
+                  <div class="map-controls">
+                    <button id="draw-zone-btn" class="map-control-btn">Draw Zone</button>
+                    <button id="draw-evac-btn" class="map-control-btn">Draw Evac Zone</button>
+                    <button id="clear-zones-btn" class="map-control-btn danger">Clear Zones</button>
+                    <button id="toggle-trails-btn" class="map-control-btn">Show Trails</button>
+                  </div>
+                </div>
               </div>
               <div class="grid three" style="margin-top: 16px">
                 <div class="panel">
@@ -630,15 +645,6 @@
                 </div>
 
                 <div class="grid two" style="margin-top: 16px">
-                  <div class="panel">
-                    <h3>Map Tools</h3>
-                    <div class="panel-actions">
-                      <button id="draw-zone-btn" class="btn">Draw Zone</button>
-                      <button id="draw-evac-btn" class="btn">Draw Evac Zone</button>
-                      <button id="clear-zones-btn" class="btn danger">Clear Zones</button>
-                      <button id="toggle-trails-btn" class="btn">Show Trails</button>
-                    </div>
-                  </div>
                   <div class="panel">
                     <h3>Data Export</h3>
                     <div class="panel-actions">

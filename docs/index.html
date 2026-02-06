@@ -213,7 +213,13 @@
         pointer-events: auto;
       }
 
+      .map-layer-group {
+        display: flex;
+        gap: 4px;
+      }
+
       .map-controls button,
+      .map-control-btn,
       .btn {
         background: #0e1512;
         border: 1px solid var(--border);
@@ -221,6 +227,20 @@
         padding: 8px 12px;
         border-radius: 10px;
         cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s ease;
+      }
+
+      .map-control-btn.active {
+        background: var(--accent);
+        color: #000;
+        border-color: var(--accent);
+        font-weight: 600;
+      }
+
+      .map-controls button:hover,
+      .map-control-btn:hover {
+        border-color: var(--accent);
       }
 
       .map-title {
@@ -423,9 +443,13 @@
                 <div id="map"></div>
                 <div class="map-overlay">
                   <div class="map-controls">
-                    <button onclick="map.zoomIn()">Zoom +</button>
-                    <button onclick="map.zoomOut()">Zoom -</button>
-                    <button>Real-time Tracking: ON</button>
+                    <button id="pan-mode-btn" class="map-control-btn active">Pan Mode</button>
+                    <div class="map-layer-group">
+                      <button id="layer-standard" class="map-control-btn active">Layer: Standard</button>
+                      <button id="layer-satellite" class="map-control-btn">Layer: Satellite</button>
+                      <button id="layer-terrain" class="map-control-btn">Layer: Terrain</button>
+                    </div>
+                    <button id="tracking-btn" class="map-control-btn active">Real-time Tracking: ON</button>
                   </div>
                 </div>
               </div>
@@ -902,6 +926,66 @@
           document.getElementById('telemetry-signal').textContent = data.signal;
         });
       }
+
+      // Map Layer Switching
+      let currentTileLayer = null;
+      const tileLayerOptions = {
+        standard: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        terrain: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+      };
+
+      const layerButtons = {
+        standard: document.getElementById('layer-standard'),
+        satellite: document.getElementById('layer-satellite'),
+        terrain: document.getElementById('layer-terrain')
+      };
+
+      function switchLayer(layerType) {
+        if (window.map && currentTileLayer) {
+          window.map.removeLayer(currentTileLayer);
+        }
+        
+        const attribution = layerType === 'standard' 
+          ? '© OpenStreetMap contributors'
+          : layerType === 'satellite'
+          ? '© Esri'
+          : '© OpenTopoMap';
+
+        currentTileLayer = L.tileLayer(tileLayerOptions[layerType], {
+          attribution: attribution,
+          maxZoom: 19
+        }).addTo(window.map);
+
+        // Update button states
+        Object.keys(layerButtons).forEach(key => {
+          layerButtons[key].classList.remove('active');
+        });
+        layerButtons[layerType].classList.add('active');
+      }
+
+      // Layer button event listeners
+      document.getElementById('layer-standard').addEventListener('click', () => switchLayer('standard'));
+      document.getElementById('layer-satellite').addEventListener('click', () => switchLayer('satellite'));
+      document.getElementById('layer-terrain').addEventListener('click', () => switchLayer('terrain'));
+
+      // Pan Mode toggle
+      let panModeEnabled = true;
+      document.getElementById('pan-mode-btn').addEventListener('click', (e) => {
+        panModeEnabled = !panModeEnabled;
+        e.target.classList.toggle('active');
+        if (window.map) {
+          window.map.dragging[panModeEnabled ? 'enable' : 'disable']();
+        }
+      });
+
+      // Real-time Tracking toggle
+      let trackingEnabled = true;
+      document.getElementById('tracking-btn').addEventListener('click', (e) => {
+        trackingEnabled = !trackingEnabled;
+        e.target.classList.toggle('active');
+        e.target.textContent = `Real-time Tracking: ${trackingEnabled ? 'ON' : 'OFF'}`;
+      });
     </script>
   </body>
 </html>

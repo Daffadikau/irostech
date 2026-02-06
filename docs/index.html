@@ -1131,6 +1131,7 @@
           } else {
             userLocationMarker = L.marker(e.latlng).addTo(window.map);
           }
+          setTimeout(() => window.map.invalidateSize(), 100);
         });
 
         window.map.on('locationerror', () => {

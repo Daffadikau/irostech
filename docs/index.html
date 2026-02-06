@@ -485,33 +485,33 @@
               <div class="telemetry">
                 <div class="telemetry-item">
                   <div>
-                    <strong>UAV-ALPHA-1</strong>
-                    <div class="tag">UAV · Active</div>
+                    <strong id="unit-name">UAV-ALPHA-1</strong>
+                    <div class="tag"><span id="unit-type">UAV</span> · <span id="unit-status">Active</span></div>
                   </div>
                   <button class="btn">Focus</button>
                 </div>
                 <div class="telemetry-item">
                   <span>Battery</span>
-                  <strong>98%</strong>
+                  <strong id="telemetry-battery">98%</strong>
                 </div>
                 <div class="telemetry-item">
                   <span>Altitude</span>
-                  <strong>320 m</strong>
+                  <strong id="telemetry-altitude">320 m</strong>
                 </div>
                 <div class="telemetry-item">
                   <span>Speed</span>
-                  <strong>41 km/h</strong>
+                  <strong id="telemetry-speed">41 km/h</strong>
                 </div>
                 <div class="telemetry-item">
                   <span>Signal Strength</span>
-                  <strong>92%</strong>
+                  <strong id="telemetry-signal">92%</strong>
                 </div>
                 <div class="telemetry-item">
                   <span>Unit Switcher</span>
-                  <select class="btn" style="width: 140px">
-                    <option>UAV-ALPHA-1</option>
-                    <option>UGV-DELTA-2</option>
-                    <option>UAV-BRAVO-1</option>
+                  <select id="unit-switcher" class="btn" style="width: 140px">
+                    <option value="UAV-ALPHA-1">UAV-ALPHA-1</option>
+                    <option value="UGV-DELTA-2">UGV-DELTA-2</option>
+                    <option value="UAV-BRAVO-1">UAV-BRAVO-1</option>
                   </select>
                 </div>
               </div>
@@ -828,6 +828,34 @@
     </div>
 
     <script>
+      // Mock unit data
+      const unitData = {
+        'UAV-ALPHA-1': {
+          type: 'UAV',
+          status: 'Active',
+          battery: '98%',
+          altitude: '320 m',
+          speed: '41 km/h',
+          signal: '92%'
+        },
+        'UGV-DELTA-2': {
+          type: 'UGV',
+          status: 'Active',
+          battery: '87%',
+          altitude: 'N/A',
+          speed: '18 km/h',
+          signal: '78%'
+        },
+        'UAV-BRAVO-1': {
+          type: 'UAV',
+          status: 'Standby',
+          battery: '65%',
+          altitude: '215 m',
+          speed: 'Hovering',
+          signal: '85%'
+        }
+      };
+
       // Initialize Leaflet map after DOM is ready
       document.addEventListener('DOMContentLoaded', function() {
         let map = window.map = L.map('map').setView([51.505, -0.09], 13);
@@ -857,6 +885,23 @@
           }
         });
       });
+
+      // Unit Switcher functionality
+      const unitSwitcher = document.getElementById('unit-switcher');
+      if (unitSwitcher) {
+        unitSwitcher.addEventListener('change', (e) => {
+          const unitName = e.target.value;
+          const data = unitData[unitName];
+          
+          document.getElementById('unit-name').textContent = unitName;
+          document.getElementById('unit-type').textContent = data.type;
+          document.getElementById('unit-status').textContent = data.status;
+          document.getElementById('telemetry-battery').textContent = data.battery;
+          document.getElementById('telemetry-altitude').textContent = data.altitude;
+          document.getElementById('telemetry-speed').textContent = data.speed;
+          document.getElementById('telemetry-signal').textContent = data.signal;
+        });
+      }
     </script>
   </body>
 </html>

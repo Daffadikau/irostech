@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CBRN Tactical Command System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <style>
       :root {
         --bg: #0a0f0d;
@@ -114,6 +116,12 @@
         align-items: center;
         justify-content: space-between;
         margin-bottom: 20px;
+      }
+
+      .status-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
 
       .status-pill {
@@ -249,6 +257,66 @@
       .map-controls button:hover,
       .map-control-btn:hover {
         border-color: var(--accent);
+      }
+
+      .panel-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .panel-actions .btn,
+      .panel-actions .map-control-btn {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 8px;
+      }
+
+      .timeline-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--panel-2);
+      }
+
+      .timeline-meta {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .role-selector {
+        background: #0e1512;
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 6px 10px;
+        border-radius: 10px;
+      }
+
+      .notification-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .notification-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--panel-2);
+      }
+
+      .tag-muted {
+        color: var(--muted);
+        font-size: 12px;
       }
 
       .map-title {
@@ -441,7 +509,14 @@
             <h2 style="margin: 0 0 6px">CBRN Tactical Command System</h2>
             <div class="status-pill">Live Status · Updated 00:00:12</div>
           </div>
-          <div class="status-pill">DEFCON 3 · Round-the-clock watch</div>
+          <div class="status-group">
+            <div class="status-pill">DEFCON 3 · Round-the-clock watch</div>
+            <select id="role-selector" class="role-selector" aria-label="Role selector">
+              <option value="commander">Role: Commander</option>
+              <option value="analyst">Role: Analyst</option>
+              <option value="field">Role: Field Operator</option>
+            </select>
+          </div>
         </div>
 
         <section id="overview" class="section active">
@@ -512,6 +587,64 @@
                         <span>UAV-BRAVO-1</span>
                         <span class="badge">Idle</span>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid three" style="margin-top: 16px">
+                  <div class="panel">
+                    <h3>Incident Marker Workflow</h3>
+                    <div class="panel-actions" style="margin-bottom: 8px">
+                      <select id="incident-severity" class="btn" aria-label="Incident severity">
+                        <option value="critical">Severity: Critical</option>
+                        <option value="high">Severity: High</option>
+                        <option value="medium">Severity: Medium</option>
+                        <option value="low">Severity: Low</option>
+                      </select>
+                      <button id="incident-mode-btn" class="btn">Add Incident</button>
+                    </div>
+                    <input id="incident-note" class="btn" style="width: 100%" placeholder="Short incident note" />
+                    <div class="tag-muted" id="incident-mode-status" style="margin-top: 8px">Mode: Off</div>
+                  </div>
+                  <div class="panel">
+                    <h3>Alert Timeline</h3>
+                    <div class="panel-actions" style="margin-bottom: 8px">
+                      <select id="timeline-filter" class="btn" aria-label="Alert filter">
+                        <option value="all">All</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </div>
+                    <div id="alert-timeline" class="timeline"></div>
+                  </div>
+                  <div class="panel">
+                    <h3>Notification Center</h3>
+                    <div class="panel-actions" style="margin-bottom: 8px">
+                      <button id="notification-sound-btn" class="btn">Sound: On</button>
+                      <button id="notification-test-btn" class="btn">Test Alert</button>
+                    </div>
+                    <div id="notification-list" class="notification-list"></div>
+                  </div>
+                </div>
+
+                <div class="grid two" style="margin-top: 16px">
+                  <div class="panel">
+                    <h3>Map Tools</h3>
+                    <div class="panel-actions">
+                      <button id="draw-zone-btn" class="btn">Draw Zone</button>
+                      <button id="draw-evac-btn" class="btn">Draw Evac Zone</button>
+                      <button id="clear-zones-btn" class="btn danger">Clear Zones</button>
+                      <button id="toggle-trails-btn" class="btn">Show Trails</button>
+                    </div>
+                  </div>
+                  <div class="panel">
+                    <h3>Data Export</h3>
+                    <div class="panel-actions">
+                      <button id="export-alerts-json" class="btn">Alerts JSON</button>
+                      <button id="export-alerts-csv" class="btn">Alerts CSV</button>
+                      <button id="export-units-json" class="btn">Units JSON</button>
                     </div>
                   </div>
                 </div>
@@ -724,6 +857,35 @@
             </div>
           </div>
 
+          <div class="grid three" style="margin-top: 16px">
+            <div class="panel">
+              <h3>Mission Playbooks</h3>
+              <div class="panel-actions">
+                <button class="btn">Evacuation</button>
+                <button class="btn">Decontamination</button>
+                <button class="btn">Triage</button>
+                <button class="btn">Perimeter Lockdown</button>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Playbook Checklist</h3>
+              <div class="list">
+                <div class="list-item">Stage Units & Assets</div>
+                <div class="list-item">Confirm Wind + Spread Models</div>
+                <div class="list-item">Broadcast Public Alert</div>
+                <div class="list-item">Activate Decon Corridors</div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Rules of Engagement</h3>
+              <div class="list">
+                <div class="list-item">Restricted Airspace: On</div>
+                <div class="list-item">Drone Autonomy: Limited</div>
+                <div class="list-item">Civilian Proximity: 1 km</div>
+              </div>
+            </div>
+          </div>
+
           <div class="grid two" style="margin-top: 16px">
             <div class="panel">
               <h3>Routes (Mission Queue)</h3>
@@ -893,16 +1055,61 @@
         }
       };
 
+      const alertTimelineData = [
+        { id: 1, severity: 'critical', message: 'Chlorine plume detected · Sector A-12', time: '00:00:32' },
+        { id: 2, severity: 'high', message: 'UGV-DELTA-2 gas spike · Lab perimeter', time: '00:01:05' },
+        { id: 3, severity: 'medium', message: 'UAV-BRAVO-1 thermal anomaly · Grid C-03', time: '00:02:11' },
+        { id: 4, severity: 'low', message: 'Perimeter motion sensor · East gate', time: '00:03:44' }
+      ];
+
+      const notificationData = [
+        { id: 1, message: 'System check complete', time: '00:00:15' },
+        { id: 2, message: 'Evacuation update synced', time: '00:01:40' }
+      ];
+
+      let currentTileLayer = null;
+      let userLocationMarker = null;
+      let drawnItems = null;
+      let drawHandlers = {};
+      let incidentMode = false;
+      let trailLayers = [];
+      let trailsVisible = false;
+      let notificationsSoundEnabled = true;
+
       // Initialize Leaflet map after DOM is ready
       document.addEventListener('DOMContentLoaded', function() {
         let map = window.map = L.map('map').setView([51.505, -0.09], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        currentTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '© OpenStreetMap contributors',
           maxZoom: 19
         }).addTo(map);
         
         // Force map to recalculate size
         setTimeout(() => map.invalidateSize(), 100);
+
+        drawnItems = new L.FeatureGroup();
+        window.map.addLayer(drawnItems);
+        const drawControl = new L.Control.Draw({
+          edit: { featureGroup: drawnItems },
+          draw: {
+            polygon: true,
+            rectangle: true,
+            polyline: false,
+            circle: false,
+            marker: false,
+            circlemarker: false
+          }
+        });
+        window.map.addControl(drawControl);
+
+        window.map.on(L.Draw.Event.CREATED, (event) => {
+          drawnItems.addLayer(event.layer);
+        });
+
+        drawHandlers = {
+          polygon: new L.Draw.Polygon(window.map, drawControl.options.draw.polygon),
+          rectangle: new L.Draw.Rectangle(window.map, drawControl.options.draw.rectangle)
+        };
 
         // Locate current user position
         const locateBtn = document.getElementById('locate-btn');
@@ -928,9 +1135,31 @@
             }, 2000);
           }
         });
-      });
 
-      let userLocationMarker = null;
+        window.map.on('click', (event) => {
+          if (!incidentMode) return;
+          const severity = document.getElementById('incident-severity').value;
+          const note = document.getElementById('incident-note').value || 'Incident reported';
+          const colors = {
+            critical: '#ff4d4f',
+            high: '#ffb020',
+            medium: '#ffd166',
+            low: '#38ff9c'
+          };
+          const marker = L.circleMarker(event.latlng, {
+            radius: 8,
+            color: colors[severity],
+            fillColor: colors[severity],
+            fillOpacity: 0.9
+          }).addTo(window.map);
+          marker.bindPopup(`<strong>${severity.toUpperCase()}</strong><br/>${note}`).openPopup();
+          incidentMode = false;
+          const incidentStatus = document.getElementById('incident-mode-status');
+          const incidentBtn = document.getElementById('incident-mode-btn');
+          incidentStatus.textContent = 'Mode: Off';
+          incidentBtn.classList.remove('active');
+        });
+      });
 
       const buttons = document.querySelectorAll(".nav button");
       const sections = document.querySelectorAll(".section");
@@ -967,8 +1196,194 @@
         });
       }
 
+      // Role selector
+      const roleSelector = document.getElementById('role-selector');
+      if (roleSelector) {
+        document.body.dataset.role = roleSelector.value;
+        roleSelector.addEventListener('change', (e) => {
+          document.body.dataset.role = e.target.value;
+          addNotification(`Role switched to ${e.target.options[e.target.selectedIndex].text}`);
+        });
+      }
+
+      // Alert timeline
+      const alertTimeline = document.getElementById('alert-timeline');
+      const timelineFilter = document.getElementById('timeline-filter');
+
+      function renderTimeline(filter = 'all') {
+        if (!alertTimeline) return;
+        alertTimeline.innerHTML = '';
+        alertTimelineData
+          .filter(item => filter === 'all' || item.severity === filter)
+          .forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'timeline-item';
+            row.innerHTML = `
+              <div>
+                <strong>${item.message}</strong>
+                <div class="timeline-meta">${item.severity.toUpperCase()}</div>
+              </div>
+              <div class="timeline-meta">${item.time}</div>
+            `;
+            alertTimeline.appendChild(row);
+          });
+      }
+
+      if (timelineFilter) {
+        timelineFilter.addEventListener('change', (e) => renderTimeline(e.target.value));
+      }
+      renderTimeline('all');
+
+      // Notifications
+      const notificationList = document.getElementById('notification-list');
+      const notificationSoundBtn = document.getElementById('notification-sound-btn');
+      const notificationTestBtn = document.getElementById('notification-test-btn');
+
+      function renderNotifications() {
+        if (!notificationList) return;
+        notificationList.innerHTML = '';
+        notificationData.slice(0, 5).forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'notification-item';
+          row.innerHTML = `<span>${item.message}</span><span class="timeline-meta">${item.time}</span>`;
+          notificationList.appendChild(row);
+        });
+      }
+
+      function playNotificationSound() {
+        if (!notificationsSoundEnabled) return;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 740;
+        gain.gain.value = 0.05;
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 0.2);
+      }
+
+      function addNotification(message) {
+        notificationData.unshift({
+          id: Date.now(),
+          message,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        });
+        renderNotifications();
+        playNotificationSound();
+      }
+
+      if (notificationSoundBtn) {
+        notificationSoundBtn.addEventListener('click', () => {
+          notificationsSoundEnabled = !notificationsSoundEnabled;
+          notificationSoundBtn.textContent = `Sound: ${notificationsSoundEnabled ? 'On' : 'Off'}`;
+        });
+      }
+
+      if (notificationTestBtn) {
+        notificationTestBtn.addEventListener('click', () => {
+          addNotification('Test alert dispatched');
+        });
+      }
+
+      renderNotifications();
+
+      // Incident marker workflow
+      const incidentModeBtn = document.getElementById('incident-mode-btn');
+      const incidentStatus = document.getElementById('incident-mode-status');
+      if (incidentModeBtn && incidentStatus) {
+        incidentModeBtn.addEventListener('click', () => {
+          incidentMode = !incidentMode;
+          incidentModeBtn.classList.toggle('active', incidentMode);
+          incidentStatus.textContent = incidentMode ? 'Mode: Click map to place' : 'Mode: Off';
+        });
+      }
+
+      // Map tools (drawing + trails)
+      const drawZoneBtn = document.getElementById('draw-zone-btn');
+      const drawEvacBtn = document.getElementById('draw-evac-btn');
+      const clearZonesBtn = document.getElementById('clear-zones-btn');
+      const toggleTrailsBtn = document.getElementById('toggle-trails-btn');
+
+      if (drawZoneBtn) {
+        drawZoneBtn.addEventListener('click', () => drawHandlers.polygon && drawHandlers.polygon.enable());
+      }
+      if (drawEvacBtn) {
+        drawEvacBtn.addEventListener('click', () => drawHandlers.rectangle && drawHandlers.rectangle.enable());
+      }
+      if (clearZonesBtn) {
+        clearZonesBtn.addEventListener('click', () => drawnItems && drawnItems.clearLayers());
+      }
+
+      const unitTrails = {
+        'UAV-ALPHA-1': [[51.505, -0.09], [51.507, -0.095], [51.508, -0.085]],
+        'UGV-DELTA-2': [[51.503, -0.08], [51.502, -0.083], [51.500, -0.086]],
+        'UAV-BRAVO-1': [[51.509, -0.1], [51.512, -0.104], [51.514, -0.098]]
+      };
+
+      function toggleTrails() {
+        if (!window.map) return;
+        trailsVisible = !trailsVisible;
+        if (toggleTrailsBtn) {
+          toggleTrailsBtn.textContent = trailsVisible ? 'Hide Trails' : 'Show Trails';
+        }
+        if (!trailsVisible) {
+          trailLayers.forEach(layer => window.map.removeLayer(layer));
+          trailLayers = [];
+          return;
+        }
+        trailLayers = Object.keys(unitTrails).map((key, index) => {
+          const color = ['#38ff9c', '#ffb020', '#00d4ff'][index % 3];
+          return L.polyline(unitTrails[key], { color, weight: 3 }).addTo(window.map);
+        });
+      }
+
+      if (toggleTrailsBtn) {
+        toggleTrailsBtn.addEventListener('click', toggleTrails);
+      }
+
+      // Data export
+      function downloadFile(filename, content, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      const exportAlertsJson = document.getElementById('export-alerts-json');
+      const exportAlertsCsv = document.getElementById('export-alerts-csv');
+      const exportUnitsJson = document.getElementById('export-units-json');
+
+      if (exportAlertsJson) {
+        exportAlertsJson.addEventListener('click', () => {
+          downloadFile('alerts.json', JSON.stringify(alertTimelineData, null, 2), 'application/json');
+        });
+      }
+
+      if (exportAlertsCsv) {
+        exportAlertsCsv.addEventListener('click', () => {
+          const csv = ['id,severity,message,time']
+            .concat(alertTimelineData.map(item => `${item.id},${item.severity},"${item.message}",${item.time}`))
+            .join('\n');
+          downloadFile('alerts.csv', csv, 'text/csv');
+        });
+      }
+
+      if (exportUnitsJson) {
+        exportUnitsJson.addEventListener('click', () => {
+          downloadFile('units.json', JSON.stringify(unitData, null, 2), 'application/json');
+        });
+      }
+
       // Map Layer Switching
-      let currentTileLayer = null;
       const tileLayerOptions = {
         standard: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',

@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CBRN Tactical Command System</title>
+    <style>
+      :root {
+        --bg: #0a0f0d;
+        --panel: #101915;
+        --panel-2: #0f1412;
+        --accent: #38ff9c;
+        --accent-2: #00d4ff;
+        --warning: #ffb020;
+        --critical: #ff4d4f;
+        --text: #e6f4ee;
+        --muted: #8aa39b;
+        --border: #1f2a25;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .app {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        background: #0b120f;
+        border-right: 1px solid var(--border);
+        padding: 24px 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        letter-spacing: 0.6px;
+      }
+
+      .brand-logo {
+        width: 140px;
+        height: 36px;
+        object-fit: contain;
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 4px 8px;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      }
+
+      .brand-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #1d3f2b, #1a7f50);
+        display: grid;
+        place-items: center;
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .nav {
+        margin-top: 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .nav button {
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--muted);
+        text-align: left;
+        padding: 12px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .nav button.active,
+      .nav button:hover {
+        border-color: var(--border);
+        color: var(--text);
+        background: var(--panel);
+      }
+
+      .content {
+        padding: 24px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #0f1f17;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel h3 {
+        margin: 0 0 12px;
+        font-size: 16px;
+        letter-spacing: 0.4px;
+      }
+
+      .panel p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 999px;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .map-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 16px;
+      }
+
+      .map-area {
+        background: linear-gradient(135deg, #0f1a14, #12241a);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        min-height: 520px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .map-overlay {
+        position: absolute;
+        inset: 16px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .map-controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .map-controls button,
+      .btn {
+        background: #0e1512;
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 8px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      .map-title {
+        font-weight: 600;
+        letter-spacing: 0.4px;
+      }
+
+      .sidebar-panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      .telemetry {
+        display: grid;
+        gap: 10px;
+      }
+
+      .telemetry-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel-2);
+        font-size: 13px;
+      }
+
+      .severity {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .dot.critical {
+        background: var(--critical);
+      }
+
+      .dot.high {
+        background: #ff7a45;
+      }
+
+      .dot.medium {
+        background: var(--warning);
+      }
+
+      .dot.low {
+        background: #3fa9f5;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .table th,
+      .table td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .table th {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .list-item {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--panel-2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .section {
+        display: none;
+      }
+
+      .section.active {
+        display: block;
+      }
+
+      .badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: #102116;
+        border: 1px solid var(--border);
+        color: var(--accent);
+        font-size: 11px;
+      }
+
+      .danger {
+        background: #2a0f0f;
+        border-color: #4a1f1f;
+        color: #ff8f8f;
+      }
+
+      @media (max-width: 1100px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: sticky;
+          top: 0;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          overflow-x: auto;
+        }
+
+        .nav {
+          flex-direction: row;
+          margin: 0;
+        }
+
+        .map-layout,
+        .split,
+        .grid.two,
+        .grid.three {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <img class="brand-logo" src="./assets/irostech-logo.png" alt="Irostech logo" />
+          <div>
+            <div>CBRN Tactical</div>
+            <div class="tag">Command System</div>
+          </div>
+        </div>
+        <nav class="nav" aria-label="Primary">
+          <button class="active" data-section="overview">Command Map</button>
+          <button data-section="analysis">Analysis</button>
+          <button data-section="substances">CBRN Substances</button>
+          <button data-section="intelligence">Intelligence</button>
+          <button data-section="planning">Planning</button>
+          <button data-section="evacuation">Evacuation</button>
+          <button data-section="settings">System Settings</button>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="topbar">
+          <div>
+            <h2 style="margin: 0 0 6px">CBRN Tactical Command System</h2>
+            <div class="status-pill">Live Status · Updated 00:00:12</div>
+          </div>
+          <div class="status-pill">DEFCON 3 · Round-the-clock watch</div>
+        </div>
+
+        <section id="overview" class="section active">
+          <div class="map-layout">
+            <div class="map-area">
+              <div class="map-overlay">
+                <div class="map-title">Main Map Area (OpenStreetMap)</div>
+                <div class="map-controls">
+                  <button>Zoom +</button>
+                  <button>Zoom -</button>
+                  <button>Pan Mode</button>
+                  <button>Layer: Standard</button>
+                  <button>Layer: Satellite</button>
+                  <button>Layer: Terrain</button>
+                  <button>Real-time Tracking: ON</button>
+                </div>
+                <div class="grid three">
+                  <div class="panel">
+                    <h3>Overlay Zones</h3>
+                    <div class="chips">
+                      <span class="chip">Risk Zone A-12</span>
+                      <span class="chip">POI: Lab Complex</span>
+                      <span class="chip">Alert Zone: C-03</span>
+                      <span class="chip">Movement Pattern Grid</span>
+                    </div>
+                  </div>
+                  <div class="panel">
+                    <h3>Active Alerts</h3>
+                    <div class="list">
+                      <div class="list-item">
+                        <span class="severity"><span class="dot critical"></span>Critical</span>
+                        <span>02</span>
+                      </div>
+                      <div class="list-item">
+                        <span class="severity"><span class="dot high"></span>High</span>
+                        <span>04</span>
+                      </div>
+                      <div class="list-item">
+                        <span class="severity"><span class="dot medium"></span>Medium</span>
+                        <span>11</span>
+                      </div>
+                      <div class="list-item">
+                        <span class="severity"><span class="dot low"></span>Low</span>
+                        <span>23</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="panel">
+                    <h3>Active Units</h3>
+                    <div class="list">
+                      <div class="list-item">
+                        <span>UAV-ALPHA-1</span>
+                        <span class="badge">Active</span>
+                      </div>
+                      <div class="list-item">
+                        <span>UGV-DELTA-2</span>
+                        <span class="badge">Returning</span>
+                      </div>
+                      <div class="list-item">
+                        <span>UAV-BRAVO-1</span>
+                        <span class="badge">Idle</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="sidebar-panel">
+              <h3>Active Units & Telemetry</h3>
+              <div class="telemetry">
+                <div class="telemetry-item">
+                  <div>
+                    <strong>UAV-ALPHA-1</strong>
+                    <div class="tag">UAV · Active</div>
+                  </div>
+                  <button class="btn">Focus</button>
+                </div>
+                <div class="telemetry-item">
+                  <span>Battery</span>
+                  <strong>98%</strong>
+                </div>
+                <div class="telemetry-item">
+                  <span>Altitude</span>
+                  <strong>320 m</strong>
+                </div>
+                <div class="telemetry-item">
+                  <span>Speed</span>
+                  <strong>41 km/h</strong>
+                </div>
+                <div class="telemetry-item">
+                  <span>Signal Strength</span>
+                  <strong>92%</strong>
+                </div>
+                <div class="telemetry-item">
+                  <span>Unit Switcher</span>
+                  <select class="btn" style="width: 140px">
+                    <option>UAV-ALPHA-1</option>
+                    <option>UGV-DELTA-2</option>
+                    <option>UAV-BRAVO-1</option>
+                  </select>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="analysis" class="section">
+          <div class="grid two">
+            <div class="panel">
+              <h3>Mission Performance & Operational Metrics</h3>
+              <div class="grid two">
+                <div class="telemetry-item"><span>Total Missions</span><strong>184</strong></div>
+                <div class="telemetry-item"><span>Success Rate</span><strong>93%</strong></div>
+                <div class="telemetry-item"><span>Avg Response Time</span><strong>4.6 min</strong></div>
+                <div class="telemetry-item"><span>Total Distance</span><strong>8,240 km</strong></div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Mission Distribution</h3>
+              <div class="chips">
+                <span class="chip">Surveillance 44%</span>
+                <span class="chip">Reconnaissance 26%</span>
+                <span class="chip">Search & Rescue 18%</span>
+                <span class="chip">Evacuation 12%</span>
+              </div>
+              <p style="margin-top: 12px">Pie/Bar visualization placeholder</p>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top: 16px">
+            <div class="panel">
+              <h3>Alert Statistics</h3>
+              <div class="list">
+                <div class="list-item"><span class="severity"><span class="dot critical"></span>Critical</span><strong>12</strong></div>
+                <div class="list-item"><span class="severity"><span class="dot high"></span>High</span><strong>25</strong></div>
+                <div class="list-item"><span class="severity"><span class="dot medium"></span>Medium</span><strong>41</strong></div>
+                <div class="list-item"><span class="severity"><span class="dot low"></span>Low</span><strong>78</strong></div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Trend Analysis Charts</h3>
+              <div class="list">
+                <div class="list-item">CBRN Detection Trends</div>
+                <div class="list-item">Alert Frequency Analysis</div>
+                <div class="list-item">Robot Performance Metrics</div>
+              </div>
+              <p style="margin-top: 12px">Line/area chart placeholders</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="substances" class="section">
+          <div class="panel">
+            <h3>CBRN Substances Database</h3>
+            <div class="chips" style="margin-bottom: 12px">
+              <span class="chip">Chem</span>
+              <span class="chip">Bio</span>
+              <span class="chip">Rad</span>
+              <span class="chip">Nuc</span>
+            </div>
+            <div class="grid two">
+              <div class="panel">
+                <h3>Chemical (20)</h3>
+                <p>Sarin, Soman, Tabun, VX, Sulfur Mustard, Nitrogen Mustard, Lewisite, Chlorine Gas, Phosgene, Hydrogen Cyanide, Cyanogen Chloride, Ammonia, CS Gas, Adamsite, BZ Agent, White Phosphorus, Sulfur Trioxide, Tear Gas (CN), Capsaicin, 3-Quinuclidinyl Benzilate.</p>
+              </div>
+              <div class="panel">
+                <h3>Biological (20)</h3>
+                <p>Anthrax, Smallpox, Botulinum Toxin, Plague, Ebola, Marburg, Tularemia, Brucellosis, Cholera, Ricin, SEB, Q Fever, Glanders, Melioidosis, Typhus, Venezuelan Equine Encephalitis, Lassa Fever, Nipah, Hantavirus, Monkeypox.</p>
+              </div>
+              <div class="panel">
+                <h3>Radiological (20)</h3>
+                <p>Cesium-137, Cobalt-60, Strontium-90, Iridium-192, Americium-241, Plutonium-238, Uranium-235, Radium-226, Polonium-210, Iodine-131, Phosphorus-32, Tritium, Carbon-14, Sodium-24, Gold-198, Technetium-99m, Yttrium-90, Palladium-103, Californium-252, Thorium-232.</p>
+              </div>
+              <div class="panel">
+                <h3>Nuclear (20)</h3>
+                <p>Highly Enriched Uranium, Weapons-Grade Plutonium, Plutonium-239, Uranium Hexafluoride, Neptunium-237, Deuterium, Tritium, Lithium-6, Beryllium, Uranium Tetrafluoride, Plutonium-Gallium, Uranium-233, Plutonium-240, Plutonium-241, Uranium-238, Depleted Uranium, Plutonium Oxide, Uranium Nitrate, Plutonium Fluoride, Thorium Dioxide.</p>
+              </div>
+            </div>
+            <div style="margin-top: 14px" class="map-controls">
+              <button>Import</button>
+              <button>Export</button>
+              <button>Add Substance</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="intelligence" class="section">
+          <div class="grid two">
+            <div class="panel">
+              <h3>DEFCON Level Control</h3>
+              <div class="list">
+                <div class="list-item">Current Level: DEFCON 3 <span class="badge">Round-the-clock watch</span></div>
+                <div class="list-item">Level Selector: DEFCON 1 - 5</div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Intelligence Sources</h3>
+              <div class="list">
+                <div class="list-item">Satellite KH-11 · Live feed</div>
+                <div class="list-item">Local Asset - 7 · Field report</div>
+                <div class="list-item">SIGINT Node-3 · Threat chatter</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top: 16px">
+            <div class="panel">
+              <h3>Target Identification</h3>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Target</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Target-21</td>
+                    <td>Vehicle</td>
+                    <td>PRIMARY</td>
+                    <td>
+                      <button class="btn">Identify</button>
+                      <button class="btn">Engage</button>
+                      <button class="btn">Track</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Target-07</td>
+                    <td>Person</td>
+                    <td>SECONDARY</td>
+                    <td>
+                      <button class="btn">Identify</button>
+                      <button class="btn">Engage</button>
+                      <button class="btn">Track</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="panel">
+              <h3>Intel Timeline</h3>
+              <div class="list">
+                <div class="list-item">12:01:22 · Satellite KH-11 detected movement</div>
+                <div class="list-item">12:03:10 · UAV-ALPHA-1 confirmed CBRN plume</div>
+                <div class="list-item">12:05:18 · Alert Level elevated to High</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="planning" class="section">
+          <div class="grid two">
+            <div class="panel">
+              <h3>Mission Templates</h3>
+              <div class="list">
+                <div class="list-item">Surveillance · 3 UAV + 2 UGV · Risk: Medium</div>
+                <div class="list-item">Extraction · 2 UGV + Support · Risk: High</div>
+                <div class="list-item">Reconnaissance · 2 UAV · Risk: Low</div>
+                <div class="list-item">Search & Rescue · 4 UAV + 3 UGV · Risk: High</div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Planner & Waypoints</h3>
+              <div class="list">
+                <div class="list-item">Mission Name: CBRN Sweep Sector 4</div>
+                <div class="list-item">Priority: High</div>
+                <div class="list-item">Waypoints: Lat/Lon input or map click</div>
+                <div class="list-item">Route Preview: Active</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top: 16px">
+            <div class="panel">
+              <h3>Routes (Mission Queue)</h3>
+              <div class="list">
+                <div class="list-item">Mission-Delta · Scheduled <button class="btn">Edit</button> <button class="btn">Launch</button></div>
+                <div class="list-item">Mission-Theta · Ready <button class="btn">Edit</button> <button class="btn">Launch</button></div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Resources (Fleet)</h3>
+              <div class="list">
+                <div class="list-item">UAV Fleet: Alpha-1, Bravo-1 · Available</div>
+                <div class="list-item">UGV Fleet: Delta-2, Foxtrot-1 · Standby</div>
+                <div class="list-item">Support: Command Center, Ambulance, Decon Unit</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="evacuation" class="section">
+          <div class="grid four">
+            <div class="panel">
+              <h3>Evacuation Summary</h3>
+              <div class="list">
+                <div class="list-item">Zones Requiring Evacuation <strong>5</strong></div>
+                <div class="list-item">Active Routes <strong>12</strong></div>
+                <div class="list-item">People Evacuated <strong>4,280</strong></div>
+                <div class="list-item">Assembly Points <strong>9</strong></div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Evacuation Zones</h3>
+              <div class="list">
+                <div class="list-item">Zone A-12 · 120,000 m² · 1,250 people <button class="btn">View Map</button></div>
+                <div class="list-item">Zone B-08 · 80,000 m² · 860 people <button class="btn">Manage Route</button></div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Evacuation Routes</h3>
+              <div class="list">
+                <div class="list-item">Route Delta-3 · Active · ETA 22 min <button class="btn">Pause</button></div>
+                <div class="list-item">Route Echo-1 · Active · ETA 18 min <button class="btn">Pause</button></div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Assembly Points</h3>
+              <div class="list">
+                <div class="list-item">Point K-9 · 78% Occupied · Medical/Water</div>
+                <div class="list-item">Point L-2 · 54% Occupied · Food/Shelter</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top: 16px">
+            <div class="panel">
+              <h3>Status Tracker</h3>
+              <div class="list">
+                <div class="list-item">Status: In Progress</div>
+                <div class="list-item">Evacuated: 4,280</div>
+                <div class="list-item">In Transit: 1,140</div>
+                <div class="list-item">Remaining: 620</div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Critical Controls</h3>
+              <div class="list">
+                <div class="list-item">Emergency Broadcast <button class="btn danger">Activate</button></div>
+                <div class="list-item">New Route Creation <button class="btn">Create</button></div>
+                <div class="list-item">Sensor Integration <span class="badge">Enabled</span></div>
+                <div class="list-item">Population Sync <span class="badge">Real-time</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="settings" class="section">
+          <div class="grid two">
+            <div class="panel">
+              <h3>Profile</h3>
+              <div class="list">
+                <div class="list-item">Username: admin.cbrn</div>
+                <div class="list-item">Display Name: Command Lead</div>
+                <div class="list-item">Email: admin@cbrn-command.gov</div>
+                <div class="list-item">Audit Trail: Enabled</div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Notifications</h3>
+              <div class="list">
+                <div class="list-item">Alerts <span class="badge">On</span></div>
+                <div class="list-item">Sound <span class="badge">On</span></div>
+                <div class="list-item">Vibration <span class="badge">Off</span></div>
+                <div class="list-item">Severity Threshold: High Priority</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top: 16px">
+            <div class="panel">
+              <h3>Map Customization</h3>
+              <div class="list">
+                <div class="list-item">Base Layer: OpenStreetMap</div>
+                <div class="list-item">Custom Markers: Enabled</div>
+                <div class="list-item">Overlay Layers: Robot Positions, Alert Zones, Movement Patterns, Grid</div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>System Configuration</h3>
+              <div class="list">
+                <div class="list-item">Refresh Rate: 250 ms</div>
+                <div class="list-item">Data Retention: 90 days</div>
+                <div class="list-item">Archive Enabled: Yes</div>
+                <div class="list-item">Theme: Tactical Green</div>
+                <div class="list-item">Language: English</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top: 16px">
+            <div class="panel">
+              <h3>Security</h3>
+              <div class="list">
+                <div class="list-item">2FA <span class="badge">Enabled</span></div>
+                <div class="list-item">Session Timeout: 15 min</div>
+                <div class="list-item">IP Whitelist: Active</div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Danger Zone</h3>
+              <div class="list">
+                <div class="list-item">Reset All Settings <button class="btn danger">Reset</button></div>
+                <div class="list-item">Clear All Data <button class="btn danger">Clear</button></div>
+              </div>
+              <p style="margin-top: 10px">Admin-only. Changes applied immediately.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const buttons = document.querySelectorAll(".nav button");
+      const sections = document.querySelectorAll(".section");
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          buttons.forEach((btn) => btn.classList.remove("active"));
+          button.classList.add("active");
+          const target = button.dataset.section;
+          sections.forEach((section) => {
+            section.classList.toggle("active", section.id === target);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

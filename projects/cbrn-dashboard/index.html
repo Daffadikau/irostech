@@ -743,34 +743,43 @@
         <section id="substances" class="section">
           <div class="panel">
             <h3>CBRN Substances Database</h3>
-            <div class="chips" style="margin-bottom: 12px">
-              <span class="chip">Chem</span>
-              <span class="chip">Bio</span>
-              <span class="chip">Rad</span>
-              <span class="chip">Nuc</span>
+            <div class="chips" style="margin-bottom: 12px" id="substance-tabs">
+              <span class="chip active" data-category="all">All</span>
+              <span class="chip" data-category="chemical">Chem</span>
+              <span class="chip" data-category="biological">Bio</span>
+              <span class="chip" data-category="radiological">Rad</span>
+              <span class="chip" data-category="nuclear">Nuc</span>
             </div>
-            <div class="grid two">
-              <div class="panel">
-                <h3>Chemical (20)</h3>
-                <p>Sarin, Soman, Tabun, VX, Sulfur Mustard, Nitrogen Mustard, Lewisite, Chlorine Gas, Phosgene, Hydrogen Cyanide, Cyanogen Chloride, Ammonia, CS Gas, Adamsite, BZ Agent, White Phosphorus, Sulfur Trioxide, Tear Gas (CN), Capsaicin, 3-Quinuclidinyl Benzilate.</p>
-              </div>
-              <div class="panel">
-                <h3>Biological (20)</h3>
-                <p>Anthrax, Smallpox, Botulinum Toxin, Plague, Ebola, Marburg, Tularemia, Brucellosis, Cholera, Ricin, SEB, Q Fever, Glanders, Melioidosis, Typhus, Venezuelan Equine Encephalitis, Lassa Fever, Nipah, Hantavirus, Monkeypox.</p>
-              </div>
-              <div class="panel">
-                <h3>Radiological (20)</h3>
-                <p>Cesium-137, Cobalt-60, Strontium-90, Iridium-192, Americium-241, Plutonium-238, Uranium-235, Radium-226, Polonium-210, Iodine-131, Phosphorus-32, Tritium, Carbon-14, Sodium-24, Gold-198, Technetium-99m, Yttrium-90, Palladium-103, Californium-252, Thorium-232.</p>
-              </div>
-              <div class="panel">
-                <h3>Nuclear (20)</h3>
-                <p>Highly Enriched Uranium, Weapons-Grade Plutonium, Plutonium-239, Uranium Hexafluoride, Neptunium-237, Deuterium, Tritium, Lithium-6, Beryllium, Uranium Tetrafluoride, Plutonium-Gallium, Uranium-233, Plutonium-240, Plutonium-241, Uranium-238, Depleted Uranium, Plutonium Oxide, Uranium Nitrate, Plutonium Fluoride, Thorium Dioxide.</p>
-              </div>
+            <div id="substance-display" class="grid two" style="margin-bottom: 16px"></div>
+            <div style="margin-bottom: 14px">
+              <input type="text" id="substance-search" class="btn" placeholder="Search substances..." style="width: 100%; margin-bottom: 8px" />
             </div>
             <div style="margin-top: 14px" class="map-controls">
-              <button>Import</button>
-              <button>Export</button>
-              <button>Add Substance</button>
+              <input type="file" id="import-file" style="display: none" accept=".json" />
+              <button id="import-btn">Import</button>
+              <button id="export-btn">Export</button>
+              <button id="add-substance-btn">Add Substance</button>
+            </div>
+          </div>
+
+          <div id="add-substance-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; padding: 20px; overflow-y: auto">
+            <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; max-width: 500px; margin: 50px auto">
+              <h3 style="margin-top: 0">Add New Substance</h3>
+              <div style="display: grid; gap: 12px">
+                <input type="text" id="substance-name" class="btn" placeholder="Substance Name" />
+                <select id="substance-category" class="btn">
+                  <option value="chemical">Chemical</option>
+                  <option value="biological">Biological</option>
+                  <option value="radiological">Radiological</option>
+                  <option value="nuclear">Nuclear</option>
+                </select>
+                <input type="text" id="substance-properties" class="btn" placeholder="Properties (comma separated)" />
+                <textarea id="substance-description" class="btn" placeholder="Description" style="min-height: 80px; padding: 8px"></textarea>
+                <div style="display: flex; gap: 8px">
+                  <button id="save-substance" class="btn" style="flex: 1">Save</button>
+                  <button id="cancel-substance" class="btn" style="flex: 1">Cancel</button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -1072,6 +1081,34 @@
         { id: 1, message: 'System check complete', time: '00:00:15' },
         { id: 2, message: 'Evacuation update synced', time: '00:01:40' }
       ];
+
+      const defaultSubstances = {
+        chemical: [
+          { name: 'Sarin', properties: 'Liquid, Volatile, Lethal', description: 'Organophosphate nerve agent' },
+          { name: 'Soman', properties: 'Liquid, Persistent, Lethal', description: 'Binary nerve agent' },
+          { name: 'VX', properties: 'Oily, Very Persistent, Lethal', description: 'Most lethal nerve agent' },
+          { name: 'Chlorine Gas', properties: 'Gas, Reactive, Toxic', description: 'Pulmonary agent' }
+        ],
+        biological: [
+          { name: 'Anthrax', properties: 'Spore, Persistent, Lethal', description: 'Bacillus anthracis' },
+          { name: 'Smallpox', properties: 'Virus, Highly Contagious, Lethal', description: 'Variola virus' },
+          { name: 'Plague', properties: 'Bacterial, Infectious, High Mortality', description: 'Yersinia pestis' },
+          { name: 'Ebola', properties: 'Virus, Highly Lethal, Hemorrhagic', description: 'Filovirus' }
+        ],
+        radiological: [
+          { name: 'Cesium-137', properties: 'Beta emitter, 30 year half-life', description: 'Fission product' },
+          { name: 'Cobalt-60', properties: 'Gamma emitter, 5.3 year half-life', description: 'Activation product' },
+          { name: 'Iridium-192', properties: 'Gamma emitter, 73.8 day half-life', description: 'Medical isotope' }
+        ],
+        nuclear: [
+          { name: 'Uranium-235', properties: 'Fissile, Alpha emitter', description: 'Natural uranium isotope' },
+          { name: 'Plutonium-239', properties: 'Fissile, Alpha emitter, 24,000 year half-life', description: 'Weapons material' },
+          { name: 'Uranium Hexafluoride', properties: 'Corrosive, Reactive gas', description: 'Uranium enrichment feedstock' }
+        ]
+      };
+
+      let substanceDatabase = JSON.parse(JSON.stringify(defaultSubstances));
+      let currentSubstanceFilter = 'all';
 
       let currentTileLayer = null;
       let userLocationMarker = null;
@@ -1448,6 +1485,149 @@
         e.target.classList.toggle('active');
         e.target.textContent = `Real-time Tracking: ${trackingEnabled ? 'ON' : 'OFF'}`;
       });
+
+      // Substance Database functions
+      function renderSubstances(filter = 'all', searchTerm = '') {
+        const display = document.getElementById('substance-display');
+        if (!display) return;
+        display.innerHTML = '';
+
+        let categoriesToShow = [];
+        if (filter === 'all') {
+          categoriesToShow = Object.keys(substanceDatabase);
+        } else {
+          categoriesToShow = [filter];
+        }
+
+        categoriesToShow.forEach(category => {
+          const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
+          const substances = substanceDatabase[category]
+            .filter(s => !searchTerm || s.name.toLowerCase().includes(searchTerm.toLowerCase()))
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+          if (substances.length === 0) return;
+
+          const panel = document.createElement('div');
+          panel.className = 'panel';
+          panel.innerHTML = `<h3>${categoryLabel} (${substances.length})</h3>`;
+
+          const list = document.createElement('div');
+          list.className = 'list';
+          substances.forEach(substance => {
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.style.flexDirection = 'column';
+            item.style.alignItems = 'flex-start';
+            item.innerHTML = `
+              <strong>${substance.name}</strong>
+              <div class="timeline-meta" style="margin-top: 4px">${substance.properties}</div>
+              <div class="timeline-meta" style="margin-top: 4px">${substance.description}</div>
+            `;
+            list.appendChild(item);
+          });
+
+          panel.appendChild(list);
+          display.appendChild(panel);
+        });
+      }
+
+      // Substance UI handlers
+      const substanceTabs = document.getElementById('substance-tabs');
+      const substanceSearch = document.getElementById('substance-search');
+      const importBtn = document.getElementById('import-btn');
+      const exportBtn = document.getElementById('export-btn');
+      const addSubstanceBtn = document.getElementById('add-substance-btn');
+      const importFile = document.getElementById('import-file');
+      const addSubstanceModal = document.getElementById('add-substance-modal');
+      const saveSubstanceBtn = document.getElementById('save-substance');
+      const cancelSubstanceBtn = document.getElementById('cancel-substance');
+
+      if (substanceTabs) {
+        substanceTabs.addEventListener('click', (e) => {
+          if (e.target.classList.contains('chip')) {
+            document.querySelectorAll('#substance-tabs .chip').forEach(c => c.classList.remove('active'));
+            e.target.classList.add('active');
+            currentSubstanceFilter = e.target.dataset.category;
+            renderSubstances(currentSubstanceFilter, substanceSearch?.value || '');
+          }
+        });
+      }
+
+      if (substanceSearch) {
+        substanceSearch.addEventListener('input', () => {
+          renderSubstances(currentSubstanceFilter, substanceSearch.value);
+        });
+      }
+
+      if (importBtn) {
+        importBtn.addEventListener('click', () => importFile.click());
+      }
+
+      if (importFile) {
+        importFile.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const imported = JSON.parse(event.target.result);
+              substanceDatabase = imported;
+              renderSubstances(currentSubstanceFilter);
+              addNotification('Substances imported successfully');
+            } catch (err) {
+              addNotification('Error importing substances');
+            }
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+          downloadFile('substances.json', JSON.stringify(substanceDatabase, null, 2), 'application/json');
+          addNotification('Substances exported');
+        });
+      }
+
+      if (addSubstanceBtn) {
+        addSubstanceBtn.addEventListener('click', () => {
+          addSubstanceModal.style.display = 'block';
+        });
+      }
+
+      if (cancelSubstanceBtn) {
+        cancelSubstanceBtn.addEventListener('click', () => {
+          addSubstanceModal.style.display = 'none';
+          document.getElementById('substance-name').value = '';
+          document.getElementById('substance-properties').value = '';
+          document.getElementById('substance-description').value = '';
+        });
+      }
+
+      if (saveSubstanceBtn) {
+        saveSubstanceBtn.addEventListener('click', () => {
+          const name = document.getElementById('substance-name').value;
+          const category = document.getElementById('substance-category').value;
+          const properties = document.getElementById('substance-properties').value;
+          const description = document.getElementById('substance-description').value;
+
+          if (!name || !properties || !description) {
+            addNotification('Please fill in all fields');
+            return;
+          }
+
+          substanceDatabase[category].push({ name, properties, description });
+          renderSubstances(currentSubstanceFilter);
+          addSubstanceModal.style.display = 'none';
+          document.getElementById('substance-name').value = '';
+          document.getElementById('substance-properties').value = '';
+          document.getElementById('substance-description').value = '';
+          addNotification(`Substance "${name}" added to ${category}`);
+        });
+      }
+
+      // Initial render
+      renderSubstances('all');
     </script>
   </body>
 </html>
